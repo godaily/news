@@ -103,7 +103,7 @@ func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time
 		if err != nil {
 			return err
 		}
-		fmt.Println("zincrby:", id, postTime.Unix()-score)
+
 		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
 		delta := postTime.Unix() - score
 		if delta == 0 {
