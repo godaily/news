@@ -49,40 +49,20 @@ func catchGouYouTuan() error {
 
 		t := s.Find("div.meta").Find("span.time").Last()
 
-		var author string
-		s.Find("div.meta").Find("a").Each(func(idx int, s *goquery.Selection) {
-			if idx == 2 {
-				author = s.Text()
-			}
+		var author, authorLink string
+
+		s.Find("span.last-reply").Find("a").Each(func(idx int, s *goquery.Selection) {
+			author = s.Text()
+			authorLink, _ = s.Attr("href")
 		})
 
-		err := saveNews(GoYouTuan, imgsrc, href, title, author, gouYouTuanS2T(t.Text()))
+		err := saveNews(GoYouTuan, imgsrc, href, title, author, authorLink, gouYouTuanS2T(t.Text()))
 		if err != nil {
 			fmt.Println(err)
 		}
 	})
 
 	return nil
-}
-
-func golangTCS2T(tm string) time.Time {
-	if tm == "刚刚" {
-		return time.Now().In(local)
-	} else if strings.HasSuffix(tm, "分钟前") {
-		min, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "分钟前")))
-		return time.Now().In(local).Add(-time.Duration(min) * time.Minute)
-	} else if strings.HasSuffix(tm, "小时前") {
-		hour, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "小时前")))
-		return time.Now().In(local).Add(-time.Duration(hour) * time.Hour)
-	} else if strings.HasSuffix(tm, "天前") {
-		min, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "天前")))
-		return time.Now().In(local).Add(-time.Duration(min) * time.Hour * 24)
-	}
-	t, err := time.ParseInLocation("2006-01-02 15:04", tm, local)
-	if err != nil {
-		panic(fmt.Sprintf("unknow time format: %v", err))
-	}
-	return t
 }
 
 /*
@@ -97,7 +77,7 @@ func golangTCS2T(tm string) time.Time {
 	  <div class="info" style="margin-left:60px">
 		<a class="label label-info" href="/go/activity">活动</a> •
 		<a href="/member/freej"><strong>freej</strong></a> •
-		2015-04-25 09:08 • 最后回复来自 <a href="/member/freej">freej</a>
+		<time datetime="2015-05-02 12:26:24" title="2015-05-02 12:26:24">1 小时前</time> • 最后回复来自 <a href="/member/freej">freej</a>
 	  </div>
 	  <div class="clear"></div>
 	</dd>
@@ -127,13 +107,16 @@ func catchGolangTC() error {
 			title = g.Text()
 		})
 
-		info := strings.Replace(strings.TrimSpace(s.Find("div.info").Text()), "\n", "", -1)
-		info = strings.Replace(info, "\t", "", -1)
-		infos := strings.Split(info, "•")
-		author := strings.TrimSpace(infos[1])
-		t := strings.TrimSpace(infos[2])
+		t, _ := s.Find("div.info").Find("time").Attr("datetime")
 
-		err := saveNews(GolangTC, imgsrc, href, title, author, golangTCS2T(t))
+		a := s.Find("div.info").Find("a").Last()
+		author := a.Text()
+		authorLink, _ := a.Attr("href")
+		authorLink = golangTCLink + authorLink
+
+		tm, _ := time.ParseInLocation("2006-01-02 15:04:05", t, local)
+
+		err := saveNews(GolangTC, imgsrc, href, title, author, authorLink, tm)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -165,11 +148,13 @@ func catchStudyGolang() error {
 		title := a.Text()
 		lastauthor := s.Find("a.author").Last()
 		author := lastauthor.Text()
+		authorLink, _ := lastauthor.Attr("href")
+		authorLink = stduyGolangLink + authorLink
 		t, _ := lastauthor.Parent().Find("abbr").Attr("title")
 
 		tm, _ := time.ParseInLocation("2006-01-02 15:04:05", t, local)
 
-		err := saveNews(StudyGoLang, imgsrc, href, title, author, tm)
+		err := saveNews(StudyGoLang, imgsrc, href, title, author, authorLink, tm)
 		if err != nil {
 			fmt.Println(err)
 		}

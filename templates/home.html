@@ -10,7 +10,7 @@
 	<td><img src="{{if eq (len .Image) 0}}/public/no.jpg{{else}}{{.Image}}{{end}}"/></td>
 	<td><div style="padding:5px;"><a href="{{.Url}}" target="_blank">{{.Title}}</a></div>
 	<div style="padding:5px;color:#878787;">
-	{{.Author}}&nbsp; &nbsp; {{Time2Str .Updated}}&nbsp; &nbsp; <a href="{{SiteLink .Site}}" target="_blank">{{SiteName .Site}}</a></div>
+	<a href="{{.AuthorLink}}" target="_blank">{{.Author}}</a>&nbsp; &nbsp; {{Time2Str .Updated}}&nbsp; &nbsp; <a href="{{SiteLink .Site}}" target="_blank">{{SiteName .Site}}</a></div>
 	</td>
 </tr>
 {{end}}

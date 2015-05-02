@@ -50,8 +50,9 @@ type News struct {
 	Image string
 	Url   string
 	Site
-	Author  string
-	Updated time.Time
+	Author     string
+	AuthorLink string
+	Updated    time.Time
 }
 
 func Time2Str(t time.Time) string {
@@ -91,7 +92,7 @@ var (
 )
 
 // TODO: transaction
-func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time.Time) error {
+func saveNews(site Site, imgUrl, articleUrl, title, author, authorLink string, postTime time.Time) error {
 	id, err := nodb.StrInt64(db.Get([]byte("urlkey:" + gmd5(articleUrl))))
 	if err != nil {
 		return err
@@ -105,6 +106,7 @@ func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time
 		}
 
 		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
+		db.Set([]byte(fmt.Sprintf("authorLink:%d", id)), []byte(authorLink))
 		delta := postTime.Unix() - score
 		if delta == 0 {
 			delta = 1
@@ -124,6 +126,7 @@ func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time
 		db.Set([]byte(fmt.Sprintf("url:%d", id)), []byte(articleUrl))
 		db.Set([]byte(fmt.Sprintf("title:%d", id)), []byte(title))
 		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
+		db.Set([]byte(fmt.Sprintf("authorLink:%d", id)), []byte(authorLink))
 		db.Set([]byte("urlkey:"+gmd5(articleUrl)), member)
 		db.ZAdd(updatedKey, nodb.ScorePair{postTime.Unix(), member})
 	}
@@ -166,14 +169,20 @@ func getNews() ([]News, error) {
 			return nil, err
 		}
 
+		bAuthorLink, err := db.Get([]byte(fmt.Sprintf("authorLink:%d", id)))
+		if err != nil {
+			return nil, err
+		}
+
 		news[i] = News{
-			Id:      id,
-			Site:    Site(site),
-			Image:   string(bImage),
-			Title:   string(bTitle),
-			Url:     string(bUrl),
-			Author:  string(bAuthor),
-			Updated: time.Unix(scorepair.Score, 0),
+			Id:         id,
+			Site:       Site(site),
+			Image:      string(bImage),
+			Title:      string(bTitle),
+			Url:        string(bUrl),
+			Author:     string(bAuthor),
+			AuthorLink: string(bAuthorLink),
+			Updated:    time.Unix(scorepair.Score, 0),
 		}
 	}
 	return news, nil
