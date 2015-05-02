@@ -22,10 +22,20 @@ var (
 		GolangTC:    "Golang中国",
 		StudyGoLang: "Study Golang",
 	}
+
+	links = map[Site]string{
+		GoYouTuan:   "http://golanghome.com",
+		GolangTC:    "http://golangtc.com",
+		StudyGoLang: "http://studygolang.com",
+	}
 )
 
 func SiteName(site Site) string {
 	return sites[site]
+}
+
+func SiteLink(site Site) string {
+	return links[site]
 }
 
 type News struct {

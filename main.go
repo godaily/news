@@ -36,9 +36,10 @@ func main() {
 		Reload: true,
 		Funcs: template.FuncMap{
 			"SiteName": SiteName,
+			"SiteLink": SiteLink,
 			"Time2Str": Time2Str,
 		},
 	}))
 	t.Get("/", new(HomeAction))
-	t.Run()
+	t.Run(":8980")
 }
