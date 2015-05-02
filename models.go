@@ -92,8 +92,6 @@ var (
 
 // TODO: transaction
 func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time.Time) error {
-	fmt.Println(imgUrl, articleUrl, title, author, postTime)
-
 	id, err := nodb.StrInt64(db.Get([]byte("urlkey:" + gmd5(articleUrl))))
 	if err != nil {
 		return err
