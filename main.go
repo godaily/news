@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"time"
 
+	"github.com/lunny/nodb"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/renders"
 )
@@ -43,6 +44,10 @@ func main() {
 			"SiteName": SiteName,
 			"SiteLink": SiteLink,
 			"Time2Str": Time2Str,
+		},
+		Vars: renders.T{
+			"TangoVer": tango.Version(),
+			"NodbVer":  nodb.Version,
 		},
 	}))
 	t.Get("/", new(HomeAction))
