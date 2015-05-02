@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/lunny/nodb"
@@ -36,6 +38,10 @@ func SiteName(site Site) string {
 
 func SiteLink(site Site) string {
 	return links[site]
+}
+
+func gmd5(ori string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(ori)))
 }
 
 type News struct {
@@ -86,7 +92,9 @@ var (
 
 // TODO: transaction
 func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time.Time) error {
-	id, err := nodb.StrInt64(db.Get([]byte("urlkey:" + articleUrl)))
+	fmt.Println(imgUrl, articleUrl, title, author, postTime)
+
+	id, err := nodb.StrInt64(db.Get([]byte("urlkey:" + gmd5(articleUrl))))
 	if err != nil {
 		return err
 	}
@@ -97,7 +105,13 @@ func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time
 		if err != nil {
 			return err
 		}
-		_, err = db.ZIncrBy(updatedKey, postTime.Unix()-score, member)
+		fmt.Println("zincrby:", id, postTime.Unix()-score)
+		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
+		delta := postTime.Unix() - score
+		if delta == 0 {
+			delta = 1
+		}
+		_, err = db.ZIncrBy(updatedKey, delta, member)
 		if err != nil {
 			return err
 		}
@@ -112,14 +126,14 @@ func saveNews(site Site, imgUrl, articleUrl, title, author string, postTime time
 		db.Set([]byte(fmt.Sprintf("url:%d", id)), []byte(articleUrl))
 		db.Set([]byte(fmt.Sprintf("title:%d", id)), []byte(title))
 		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
-		db.Set([]byte("urlkey:"+articleUrl), member)
+		db.Set([]byte("urlkey:"+gmd5(articleUrl)), member)
 		db.ZAdd(updatedKey, nodb.ScorePair{postTime.Unix(), member})
 	}
 	return nil
 }
 
 func getNews() ([]News, error) {
-	scores, err := db.ZRevRange([]byte("updated"), 0, 20)
+	scores, err := db.ZRevRangeByScore([]byte("updated"), 0, math.MaxInt64, 0, 20)
 	if err != nil {
 		return nil, err
 	}

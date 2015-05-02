@@ -18,13 +18,13 @@ var (
 func gouYouTuanS2T(tm string) time.Time {
 	if strings.HasSuffix(tm, "分钟前") {
 		min, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "分钟前")))
-		return time.Now().Add(-time.Duration(min) * time.Minute)
+		return time.Now().In(local).Add(-time.Duration(min) * time.Minute)
 	} else if strings.HasSuffix(tm, "小时前") {
 		hour, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "小时前")))
-		return time.Now().Add(-time.Duration(hour) * time.Hour)
+		return time.Now().In(local).Add(-time.Duration(hour) * time.Hour)
 	} else if strings.HasSuffix(tm, "天前") {
 		min, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "天前")))
-		return time.Now().Add(-time.Duration(min) * time.Hour * 24)
+		return time.Now().In(local).Add(-time.Duration(min) * time.Hour * 24)
 	}
 	panic("unknow time")
 }
@@ -66,17 +66,19 @@ func catchGouYouTuan() error {
 }
 
 func golangTCS2T(tm string) time.Time {
-	if strings.HasSuffix(tm, "分钟前") {
+	if tm == "刚刚" {
+		return time.Now().In(local)
+	} else if strings.HasSuffix(tm, "分钟前") {
 		min, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "分钟前")))
-		return time.Now().Add(-time.Duration(min) * time.Minute)
+		return time.Now().In(local).Add(-time.Duration(min) * time.Minute)
 	} else if strings.HasSuffix(tm, "小时前") {
 		hour, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "小时前")))
-		return time.Now().Add(-time.Duration(hour) * time.Hour)
+		return time.Now().In(local).Add(-time.Duration(hour) * time.Hour)
 	} else if strings.HasSuffix(tm, "天前") {
 		min, _ := strconv.Atoi(strings.TrimSpace(strings.TrimRight(tm, "天前")))
-		return time.Now().Add(-time.Duration(min) * time.Hour * 24)
+		return time.Now().In(local).Add(-time.Duration(min) * time.Hour * 24)
 	}
-	t, err := time.Parse("2006-01-02 15:04", tm)
+	t, err := time.ParseInLocation("2006-01-02 15:04", tm, local)
 	if err != nil {
 		panic(fmt.Sprintf("unknow time format: %v", err))
 	}
@@ -167,7 +169,7 @@ func catchStudyGolang() error {
 		author := lastauthor.Text()
 		t, _ := lastauthor.Parent().Find("abbr").Attr("title")
 
-		tm, _ := time.Parse("2006-01-02 15:04:05", t)
+		tm, _ := time.ParseInLocation("2006-01-02 15:04:05", t, local)
 
 		err := saveNews(StudyGoLang, imgsrc, href, title, author, tm)
 		if err != nil {

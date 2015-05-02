@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"time"
 
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/renders"
@@ -21,6 +22,10 @@ func (h *HomeAction) Get() error {
 		"news": news,
 	})
 }
+
+var (
+	local, _ = time.LoadLocation("Asia/Chongqing")
+)
 
 func main() {
 	err := Init()
