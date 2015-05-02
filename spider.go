@@ -121,12 +121,10 @@ func catchGolangTC() error {
 		var href string
 		var title string
 
-		s.Find("a").Each(func(idx int, g *goquery.Selection) {
-			if idx == 2 {
-				href, _ = g.Attr("href")
-				href = golangTCLink + href
-				title = g.Text()
-			}
+		s.Find("a.title").Each(func(idx int, g *goquery.Selection) {
+			href, _ = g.Attr("href")
+			href = golangTCLink + href
+			title = g.Text()
 		})
 
 		info := strings.Replace(strings.TrimSpace(s.Find("div.info").Text()), "\n", "", -1)
