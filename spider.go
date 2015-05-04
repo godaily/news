@@ -9,6 +9,7 @@ import (
 
 	"code.google.com/p/mahonia"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/lunny/log"
 )
 
 var (
@@ -188,13 +189,24 @@ func catchStudyGolang() error {
 	return nil
 }
 
+func catch() {
+	defer func() {
+		if e := recover(); e != nil {
+			log.Error("catch error:", e)
+		}
+	}()
+
+	catchGouYouTuan()
+
+	catchGolangTC()
+
+	catchStudyGolang()
+}
+
 func spiders() {
 	for {
-		catchGouYouTuan()
 
-		catchGolangTC()
-
-		catchStudyGolang()
+		catch()
 
 		time.Sleep(time.Second * 10)
 	}
