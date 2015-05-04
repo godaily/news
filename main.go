@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"time"
 
+	"github.com/lunny/log"
 	"github.com/lunny/nodb"
 	"github.com/lunny/tango"
 	"github.com/tango-contrib/renders"
@@ -37,7 +38,11 @@ func main() {
 
 	go spiders()
 
-	t := tango.Classic()
+	w := log.NewFileWriter()
+	log.Std.SetOutput(w)
+	log.Std.SetOutputLevel(log.Lall)
+
+	t := tango.Classic(log.Std)
 	t.Use(renders.New(renders.Options{
 		Reload: true,
 		Funcs: template.FuncMap{
