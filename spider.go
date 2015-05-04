@@ -49,14 +49,23 @@ func catchGouYouTuan() error {
 
 		t := s.Find("div.meta").Find("span.time").Last()
 
-		var author, authorLink string
+		var author1, author1Link string
+		var author2, author2Link string
 
-		s.Find("span.last-reply").Find("a").Each(func(idx int, s *goquery.Selection) {
-			author = s.Text()
-			authorLink, _ = s.Attr("href")
+		s.Find("div.meta").Find("a").Each(func(idx int, s *goquery.Selection) {
+			if idx == 2 {
+				author1 = s.Text()
+				author1Link, _ = s.Attr("href")
+			}
 		})
 
-		err := saveNews(GoYouTuan, imgsrc, href, title, author, authorLink, gouYouTuanS2T(t.Text()))
+		s.Find("span.last-reply").Find("a").Each(func(idx int, s *goquery.Selection) {
+			author2 = s.Text()
+			author2Link, _ = s.Attr("href")
+		})
+
+		err := saveNews(GoYouTuan, imgsrc, href, title, author1, author1Link,
+			author2, author2Link, gouYouTuanS2T(t.Text()))
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -107,16 +116,27 @@ func catchGolangTC() error {
 			title = g.Text()
 		})
 
+		var author1, author1Link string
+		var author2, author2Link string
+
 		t, _ := s.Find("div.info").Find("time").Attr("datetime")
 
-		a := s.Find("div.info").Find("a").Last()
-		author := a.Text()
-		authorLink, _ := a.Attr("href")
-		authorLink = golangTCLink + authorLink
+		s.Find("div.info").Find("a").Each(func(idx int, g *goquery.Selection) {
+			if idx == 1 {
+				author1 = g.Text()
+				author1Link, _ = g.Attr("href")
+				author1Link = golangTCLink + author1Link
+			} else if idx == 2 {
+				author2 = g.Text()
+				author2Link, _ = g.Attr("href")
+				author2Link = golangTCLink + author2Link
+			}
+		})
 
 		tm, _ := time.ParseInLocation("2006-01-02 15:04:05", t, local)
 
-		err := saveNews(GolangTC, imgsrc, href, title, author, authorLink, tm)
+		err := saveNews(GolangTC, imgsrc, href, title, author1, author1Link,
+			author2, author2Link, tm)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -146,15 +166,21 @@ func catchStudyGolang() error {
 		href, _ := a.Attr("href")
 		href = stduyGolangLink + href
 		title := a.Text()
+		firstauthor := s.Find("a.author").First()
+		author1 := firstauthor.Text()
+		author1Link, _ := firstauthor.Attr("href")
+		author1Link = stduyGolangLink + author1Link
+
 		lastauthor := s.Find("a.author").Last()
-		author := lastauthor.Text()
-		authorLink, _ := lastauthor.Attr("href")
-		authorLink = stduyGolangLink + authorLink
+		author2 := lastauthor.Text()
+		author2Link, _ := lastauthor.Attr("href")
+		author2Link = stduyGolangLink + author2Link
 		t, _ := lastauthor.Parent().Find("abbr").Attr("title")
 
 		tm, _ := time.ParseInLocation("2006-01-02 15:04:05", t, local)
 
-		err := saveNews(StudyGoLang, imgsrc, href, title, author, authorLink, tm)
+		err := saveNews(StudyGoLang, imgsrc, href, title,
+			author1, author1Link, author2, author2Link, tm)
 		if err != nil {
 			fmt.Println(err)
 		}

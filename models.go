@@ -50,9 +50,11 @@ type News struct {
 	Image string
 	Url   string
 	Site
-	Author     string
-	AuthorLink string
-	Updated    time.Time
+	Author      string
+	AuthorLink  string
+	Author2     string
+	Author2Link string
+	Updated     time.Time
 }
 
 func Time2Str(t time.Time) string {
@@ -92,7 +94,8 @@ var (
 )
 
 // TODO: transaction
-func saveNews(site Site, imgUrl, articleUrl, title, author, authorLink string, postTime time.Time) error {
+func saveNews(site Site, imgUrl, articleUrl, title, author1, author1Link,
+	author2, author2Link string, postTime time.Time) error {
 	id, err := nodb.StrInt64(db.Get([]byte("urlkey:" + gmd5(articleUrl))))
 	if err != nil {
 		return err
@@ -105,8 +108,8 @@ func saveNews(site Site, imgUrl, articleUrl, title, author, authorLink string, p
 			return err
 		}
 
-		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
-		db.Set([]byte(fmt.Sprintf("authorLink:%d", id)), []byte(authorLink))
+		db.Set([]byte(fmt.Sprintf("author2:%d", id)), []byte(author2))
+		db.Set([]byte(fmt.Sprintf("author2Link:%d", id)), []byte(author2Link))
 		delta := postTime.Unix() - score
 		if delta == 0 {
 			delta = 1
@@ -125,8 +128,10 @@ func saveNews(site Site, imgUrl, articleUrl, title, author, authorLink string, p
 		db.Set([]byte(fmt.Sprintf("image:%d", id)), []byte(imgUrl))
 		db.Set([]byte(fmt.Sprintf("url:%d", id)), []byte(articleUrl))
 		db.Set([]byte(fmt.Sprintf("title:%d", id)), []byte(title))
-		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author))
-		db.Set([]byte(fmt.Sprintf("authorLink:%d", id)), []byte(authorLink))
+		db.Set([]byte(fmt.Sprintf("author:%d", id)), []byte(author1))
+		db.Set([]byte(fmt.Sprintf("authorLink:%d", id)), []byte(author1Link))
+		db.Set([]byte(fmt.Sprintf("author2:%d", id)), []byte(author2))
+		db.Set([]byte(fmt.Sprintf("author2Link:%d", id)), []byte(author2Link))
 		db.Set([]byte("urlkey:"+gmd5(articleUrl)), member)
 		db.ZAdd(updatedKey, nodb.ScorePair{postTime.Unix(), member})
 	}
@@ -174,15 +179,27 @@ func getNews() ([]News, error) {
 			return nil, err
 		}
 
+		bAuthor2, err := db.Get([]byte(fmt.Sprintf("author2:%d", id)))
+		if err != nil {
+			return nil, err
+		}
+
+		bAuthor2Link, err := db.Get([]byte(fmt.Sprintf("author2Link:%d", id)))
+		if err != nil {
+			return nil, err
+		}
+
 		news[i] = News{
-			Id:         id,
-			Site:       Site(site),
-			Image:      string(bImage),
-			Title:      string(bTitle),
-			Url:        string(bUrl),
-			Author:     string(bAuthor),
-			AuthorLink: string(bAuthorLink),
-			Updated:    time.Unix(scorepair.Score, 0),
+			Id:          id,
+			Site:        Site(site),
+			Image:       string(bImage),
+			Title:       string(bTitle),
+			Url:         string(bUrl),
+			Author:      string(bAuthor),
+			AuthorLink:  string(bAuthorLink),
+			Author2:     string(bAuthor2),
+			Author2Link: string(bAuthor2Link),
+			Updated:     time.Unix(scorepair.Score, 0),
 		}
 	}
 	return news, nil
