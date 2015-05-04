@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"strconv"
 	"time"
 
 	"github.com/lunny/log"
@@ -13,16 +14,44 @@ import (
 
 type HomeAction struct {
 	renders.Renderer
+	tango.Ctx
+}
+
+type set map[string]interface{}
+
+func (s *set) Get(name string) interface{} {
+	return (*s)[name]
+}
+
+func (s *set) Set(name string, value interface{}) string {
+	(*s)[name] = value
+	return ""
 }
 
 func (h *HomeAction) Get() error {
+	last_read_time := h.Cookies().Get("last_read_time")
+	var lastSeconds int64
+	if last_read_time != nil {
+		lastSeconds, _ = strconv.ParseInt(last_read_time.Value, 10, 64)
+	}
+
 	news, err := getNews()
 	if err != nil {
 		return err
 	}
-	return h.Render("home.html", renders.T{
-		"news": news,
+
+	h.Cookies().Set(tango.NewCookie("last_read_time", fmt.Sprintf("%d", time.Now().Unix())))
+	vars := make(set)
+	err = h.Render("home.html", renders.T{
+		"news":        news,
+		"lastSeconds": lastSeconds,
+		"vars":        &vars,
 	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 var (

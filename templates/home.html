@@ -9,7 +9,18 @@
 </head>
 <body>
 <table>
+{{$lastSeconds := .lastSeconds}}
+{{$vars := .vars}}
+{{$vars.Set "used" 0}}
 {{range .news}}
+{{if and (eq ($vars.Get "used") 0) (lt .Updated.Unix $lastSeconds)}}
+{{$vars.Set "used" 1}}
+<tr>
+<td colspan="2">
+----------------<i>您最后一次读到这里</i>----------------
+</td>
+</tr>
+{{end}}
 <tr style="margin-top:20px;">
 	<td><img src="{{if eq (len .Image) 0}}/public/no.jpg{{else}}{{.Image}}{{end}}"/></td>
 	<td><div style="padding:5px;"><a href="{{.Url}}" target="_blank">{{.Title}}</a></div>
