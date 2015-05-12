@@ -7,13 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"code.google.com/p/mahonia"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/lunny/log"
-)
-
-var (
-	gbkDecoder = mahonia.NewDecoder("gbk")
 )
 
 func gouYouTuanS2T(tm string) time.Time {
