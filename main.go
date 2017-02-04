@@ -85,5 +85,6 @@ func main() {
 		},
 	}))
 	t.Get("/", new(HomeAction))
+	t.Get("/api/v1/news", new(APIAction))
 	t.Run(":8980")
 }
